@@ -19,11 +19,14 @@ def index():
         function to return a index
     '''
 
-    
+
     return render_template('index')
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     try:
-        cidade = request.form['cidade']
+        if 'cidade' in request.form:
+            cidade = request.form['cidade']
+        else:
+            raise 'ERRO'
         URL = 'http://api.openweathermap.org/data/2.5/weather?q={}&appid={}'.format(cidade, API_KEY)
