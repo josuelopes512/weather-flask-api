@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-
+from config import *
 import requests, os
 
 app = Flask(__name__)
@@ -20,11 +20,25 @@ def index():
     '''
 
 
-    return render_template('index')
+    return render_template('index.html')
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    try:
-        if 'cidade' in request.form:
-            cidade = request.form['cidade']
-        URL = 'http://api.openweathermap.org/data/2.5/weather?q={}&appid={}'.format(cidade, API_KEY)
+    city = request.form['cidade']   
+    URL = 'http://api.openweathermap.org/data/2.5/weather?q={}&appid={}'.format(city, API_KEY)
+    req = requests.request('GET', URL).json()
+    if req['cod'] == '404' or not 'weather' in req:
+        error = 'Cidade Inválida'
+        not_found = True
+        return render_template('index.html', error=error, not_found=not_found)
+    weather = req['weather'][0]['main']
+    description = req['weather'][0]['description']
+    minima = round(kelvin_to_celsius(req['main']['temp_min']), 2)
+    maxima = round(kelvin_to_celsius(req['main']['temp_max']), 2)
+    
+
+    return render_template('index.html', city=city, weather=weather, description=description, minima=minima, maxima=maxima)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
